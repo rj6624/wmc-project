@@ -27,6 +27,7 @@ This website facilitates the buying and selling of luxury properties like pentho
    - The user balance updates automatically after each purchase.
 
 5. **Selling Process:**
+
    - Click the "Sell" button to display a form for listing an item.
    - Users must fill in the appropriate details; the email field is auto-filled.
    - After submission, the item appears on the buy page.
@@ -47,6 +48,9 @@ This website facilitates the buying and selling of luxury properties like pentho
 - **Various Categories:** Explore luxury properties like cars, planes, penthouses, and yachts.
 - **Exclusive Listings**
 - **Cart Management**
+- **Wishlist Management**
+- **Real Time Tracking Order**
+- **Support System**
 - **Purchase History**
 - **Sell Functionality**
 - **Search by Category**
@@ -64,8 +68,12 @@ This website facilitates the buying and selling of luxury properties like pentho
 ![WhatsApp Image 2024-08-06 at 23 46 25_da5fed3c](https://github.com/user-attachments/assets/0a88c7d0-3986-4948-9413-b762db010187)
 ![WhatsApp Image 2024-08-06 at 23 47 01_48b3e225](https://github.com/user-attachments/assets/d17355d5-3871-455e-a373-718b31ba4641)
 ![WhatsApp Image 2024-08-06 at 23 47 01_b2921007](https://github.com/user-attachments/assets/7b0c84a0-7191-4dd7-bff6-b730d81c94ef)
-
-
+![Screenshot (33)](https://github.com/user-attachments/assets/e2434ca3-3298-4d57-9364-4c108f48bb02)
+![Screenshot (34)](https://github.com/user-attachments/assets/5c677fad-07a5-490d-ac12-923d9cc92563)
+![Screenshot (29)](https://github.com/user-attachments/assets/15bcffe2-6b6f-40ae-8a5f-447032f80ed4)
+![Screenshot (35)](https://github.com/user-attachments/assets/fa1993a0-a2f6-4085-af4a-2dd67cc2e805)
+![Screenshot (38)](https://github.com/user-attachments/assets/a10fcbc7-8611-4c61-901c-0c334e54cdfc)
+![Screenshot (41)](https://github.com/user-attachments/assets/405bc70d-5b23-4634-811a-b51e57ab1749)
 
 
 
