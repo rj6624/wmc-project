@@ -6,6 +6,7 @@ import multer from 'multer';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import os from "os";
 const SECRET_KEY = 'myauthencation';
 import session from 'express-session';
 
@@ -17,7 +18,7 @@ const port = 3000;
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: os.tmpdir() });
 app.use(express.static("public"));
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -25,7 +26,7 @@ app.use(session({
   secret: 'secret',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true }
+  cookie: { secure: process.env.NODE_ENV === 'production' }
 }))
 
 // Middleware to get the logged-in user
