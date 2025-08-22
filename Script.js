@@ -9,12 +9,18 @@ import cookieParser from "cookie-parser";
 import os from "os";
 const SECRET_KEY = 'myauthencation';
 import session from 'express-session';
+import path from "path";
+import { fileURLToPath } from "url";
 
 // const pgSession = connectPgSimple(session);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3000;
 
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -44,12 +50,15 @@ const getUser = async (req, res, next) => {
 app.use(getUser);
 
 const db = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "WMC_LOGIN",
-    password: "jayrupareliya",
-    port: 5432,
-  });
+  user: process.env.DB_USER || "postgres",
+  host: process.env.DB_HOST || "localhost",
+  database: process.env.DB_DATABASE || "WMC_LOGIN",
+  password: process.env.DB_PASSWORD || "jayrupareliya",
+  port: process.env.DB_PORT || 5432,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
   // app.use(session({
   //   store: new pgSession({
