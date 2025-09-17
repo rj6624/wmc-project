@@ -1,18 +1,19 @@
+import 'dotenv/config';
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";
+import { createClient } from '@supabase/supabase-js';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-const SECRET_KEY = 'myauthencation';
+const SECRET_KEY = process.env.JWT_SECRET_KEY || 'myauthencation';
 import session from 'express-session';
 
 // const pgSession = connectPgSimple(session);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
 
@@ -22,10 +23,10 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(session({
-  secret: 'secret',
+  secret: process.env.SESSION_SECRET || 'secret',
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true }
+  cookie: { secure: false } // Changed to false for development
 }))
 
 // Middleware to get the logged-in user
@@ -42,13 +43,203 @@ const getUser = async (req, res, next) => {
 
 app.use(getUser);
 
-const db = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "WMC_LOGIN",
-    password: "jayrupareliya",
-    port: 5432,
-  });
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Legacy db object for backward compatibility
+const db = {
+  query: async (text, params = []) => {
+    try {
+      const queryLower = text.toLowerCase().trim();
+      
+      // Handle SELECT queries
+      if (queryLower.startsWith('select')) {
+        return await handleSelectQuery(text, params);
+      }
+      
+      // Handle INSERT queries
+      if (queryLower.startsWith('insert')) {
+        return await handleInsertQuery(text, params);
+      }
+      
+      // Handle UPDATE queries
+      if (queryLower.startsWith('update')) {
+        return await handleUpdateQuery(text, params);
+      }
+      
+      // Handle DELETE queries
+      if (queryLower.startsWith('delete')) {
+        return await handleDeleteQuery(text, params);
+      }
+      
+      console.log('Unsupported query type:', text);
+      throw new Error('Query type not supported: ' + text);
+      
+    } catch (error) {
+      console.error('Database query error:', error);
+      throw error;
+    }
+  }
+};
+
+// Helper function to handle SELECT queries
+async function handleSelectQuery(text, params) {
+  const queryLower = text.toLowerCase();
+  
+  // SELECT * FROM users WHERE email = $1
+  if (queryLower.includes('select * from users where email')) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', params[0]);
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT balance FROM users WHERE email = $1
+  if (queryLower.includes('select balance from users where email')) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('balance')
+      .eq('email', params[0]);
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT * FROM purchase_history WHERE buyer_email = $1
+  if (queryLower.includes('select * from purchase_history where buyer_email')) {
+    const { data, error } = await supabase
+      .from('purchase_history')
+      .select('*')
+      .eq('buyer_email', params[0]);
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT from buy_car2
+  if (queryLower.includes('select') && queryLower.includes('from buy_car2')) {
+    const { data, error } = await supabase
+      .from('buy_car2')
+      .select('id, model, price, image, year, milage, speed, power, fuel');
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT from buy_planes2
+  if (queryLower.includes('select') && queryLower.includes('from buy_planes2')) {
+    const { data, error } = await supabase
+      .from('buy_planes2')
+      .select('id, model, year, price, range, thrust, speed, capacity, type, description, seller_name, seller_email, seller_phone, photos');
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT from buy_penthouses2
+  if (queryLower.includes('select') && queryLower.includes('from buy_penthouses2')) {
+    const { data, error } = await supabase
+      .from('buy_penthouses2')
+      .select('id, name, year, price, bed, level, sqft, bathroom, location, description, seller_name, seller_email, seller_phone, photos');
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // SELECT from buy_yatch2
+  if (queryLower.includes('select') && queryLower.includes('from buy_yatch2')) {
+    const { data, error } = await supabase
+      .from('buy_yatch2')
+      .select('id, name, year, price, length, power, speed, cabin, type, description, seller_name, seller_email, seller_phone, photos');
+    
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  throw new Error('SELECT query not supported: ' + text);
+}
+
+// Helper function to handle INSERT queries
+async function handleInsertQuery(text, params) {
+  const queryLower = text.toLowerCase();
+  
+  // Extract table name from INSERT INTO table_name
+  const tableMatch = queryLower.match(/insert into (\w+)/);
+  if (!tableMatch) {
+    throw new Error('Could not extract table name from INSERT query: ' + text);
+  }
+  
+  const tableName = tableMatch[1];
+  
+  // INSERT INTO users
+  if (tableName === 'users') {
+    const [username, email, password] = params;
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{ username, email, password }])
+      .select();
+      
+    if (error) throw error;
+    return { rows: data || [] };
+  }
+  
+  // For now, we'll need to implement specific INSERT handlers based on your table structure
+  // This is a placeholder - you'll need to customize based on your actual table schemas
+  console.log('INSERT query needs custom implementation for table:', tableName);
+  console.log('Query:', text);
+  console.log('Params:', params);
+  
+  throw new Error('INSERT query implementation needed for table: ' + tableName);
+}
+
+// Helper function to handle UPDATE queries
+async function handleUpdateQuery(text, params) {
+  const queryLower = text.toLowerCase();
+  
+  // Extract table name from UPDATE table_name
+  const tableMatch = queryLower.match(/update (\w+)/);
+  if (!tableMatch) {
+    throw new Error('Could not extract table name from UPDATE query: ' + text);
+  }
+  
+  const tableName = tableMatch[1];
+  
+  // UPDATE users SET balance = ... WHERE email = ...
+  if (tableName === 'users' && queryLower.includes('set balance')) {
+    // This would need to be implemented based on your specific update logic
+    console.log('UPDATE users balance query needs implementation');
+    console.log('Query:', text);
+    console.log('Params:', params);
+    
+    throw new Error('UPDATE users balance query implementation needed');
+  }
+  
+  throw new Error('UPDATE query implementation needed for table: ' + tableName);
+}
+
+// Helper function to handle DELETE queries
+async function handleDeleteQuery(text, params) {
+  const queryLower = text.toLowerCase();
+  
+  // Extract table name from DELETE FROM table_name
+  const tableMatch = queryLower.match(/delete from (\w+)/);
+  if (!tableMatch) {
+    throw new Error('Could not extract table name from DELETE query: ' + text);
+  }
+  
+  const tableName = tableMatch[1];
+  
+  console.log('DELETE query needs implementation for table:', tableName);
+  console.log('Query:', text);
+  console.log('Params:', params);
+  
+  throw new Error('DELETE query implementation needed for table: ' + tableName);
+}
 
   // app.use(session({
   //   store: new pgSession({
@@ -61,13 +252,13 @@ const db = new pg.Client({
   // }));
 
 
-db.connect();
+// Supabase client is ready to use - no explicit connection needed
 
 
 cloudinary.config({ 
-    cloud_name: 'dkhzguzox', 
-    api_key: '714236652896573', 
-    api_secret: 'QVw6U1c399-w5h4Ro57cjRIu-c0' // Click 'View Credentials' below to copy your API secret
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 // =======================================================
