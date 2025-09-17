@@ -25,7 +25,8 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer({ dest: os.tmpdir() });
-app.use(express.static("./public"));
+app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static("./public"));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(session({
